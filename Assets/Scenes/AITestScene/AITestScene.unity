@@ -335,11 +335,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b6bee6aced663d4a956abf598a1381c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionDistance: 5
-  projectile: {fileID: 0}
-  projectileSpeed: 0
-  projectileSize: {x: 0, y: 0, z: 0}
+  detectionDistance: 15
+  projectile: {fileID: 1303456030352736496, guid: b6b6f22f4f7f125469863a254d9a0c09, type: 3}
+  projectileSpeed: 100
+  projectileSize: {x: 1, y: 1, z: 1}
   projectileLifespan: 0
+  fireRate: 1
 --- !u!1 &1082460078
 GameObject:
   m_ObjectHideFlags: 0
