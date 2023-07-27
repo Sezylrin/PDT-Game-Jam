@@ -12,6 +12,7 @@ public class HealthBar : MonoBehaviour
     public Image background;
     public Image foregroundLeftBar;
     public Image foregroundRightBar;
+    public Text healthText;
 
 
 
@@ -130,11 +131,20 @@ public class HealthBar : MonoBehaviour
     void UpdateBar()
     {
         background.color = backgroundColor.Evaluate(tempSpeed / maxSpeedBenefit);
-        foregroundLeftBar.color = foregroundColor.Evaluate((currentHealth - minHealthColor) / (1 - minHealthColor));
-        foregroundRightBar.color = foregroundColor.Evaluate((currentHealth - minHealthColor) / (1 - minHealthColor));
 
+        Color barColour = foregroundColor.Evaluate((currentHealth - minHealthColor) / (1 - minHealthColor));
+        foregroundLeftBar.color = barColour;
+        foregroundRightBar.color = barColour;
         foregroundLeftBar.fillAmount = currentHealth;
         foregroundRightBar.fillAmount = currentHealth;
+
+        healthText.text = ((int)(currentHealth * 100)).ToString();
+
+        float textH, textS, barS, barV;
+        Color textColor = barColour;
+        Color.RGBToHSV(textColor, out float a, out barS, out barV);
+        Color.RGBToHSV(healthText.color, out textH, out textS, out float b);
+        healthText.color = Color.HSVToRGB(textH, textS, Mathf.Abs(barV - 1.0f));
     }
 
     [Tooltip("Modify health values in fixed amount")]
