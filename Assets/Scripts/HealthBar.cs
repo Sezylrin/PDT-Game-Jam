@@ -112,7 +112,7 @@ public class HealthBar : MonoBehaviour
                 currentHealth -= baseDrainRate * multiplier * Time.deltaTime;
             }
 
-            Debug.Log(multiplier);
+            //Debug.Log(multiplier);
         }
         // Rapid change in health using quart lerp
         else
