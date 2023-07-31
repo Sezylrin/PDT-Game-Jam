@@ -16,8 +16,8 @@ public class EnemyShooting : MonoBehaviour
     [SerializeField] private GameObject projectile;
     [SerializeField] private float projectileSpeed;
     [SerializeField] private Vector3 projectileSize;
-    [SerializeField] private float projectileLifespan;
-    [SerializeField] private float fireRate; // Projectiles per minute
+    [SerializeField, Range(0, 60), Tooltip("Time in seconds before projectile despawns")] public float projectileLifespan;
+    [SerializeField, Tooltip("Projectiles fired per minute")] private float fireRate;
     private float fireRateCountdown;
     private float fireRateTime;
     private Vector3 projectileSpawnPosition;
@@ -25,14 +25,13 @@ public class EnemyShooting : MonoBehaviour
     private void Start()
     {
         player = GameObject.FindWithTag(Tags.T_Player);
-        projectileSpawnPosition = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
-
-        fireRateCountdown = fireRate / 60f;
     }
 
     private void Update()
     {
+        projectileSpawnPosition = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
         ProcessDetection();
+        ProcessFireRate();
     }
 
     private void FixedUpdate() 
@@ -43,14 +42,14 @@ public class EnemyShooting : MonoBehaviour
     // Handles player detection and calling necessary methods
     private void ProcessDetection()
     {
+        // Gets distance from player every update frame
         distanceFromPlayer = Vector3.Distance(player.transform.position, this.transform.position);
 
+        // Set state depending on conditions
         if(distanceFromPlayer <= detectionDistance && IsPlayerVisible())
         {
             this.transform.LookAt(player.transform);
             enemyState = EnemyState.Shooting;
-
-            Debug.Log("Player detected");
         }
         else
         {
@@ -58,7 +57,7 @@ public class EnemyShooting : MonoBehaviour
         }
     }
 
-    // Checks if player is within line of sight
+    // Checks if player is within line of sight with raycast
     private bool IsPlayerVisible()
     {
         Vector3 raycastDirection = player.transform.position - this.transform.position;
@@ -73,10 +72,10 @@ public class EnemyShooting : MonoBehaviour
         return false;
     }
 
+    // Handles rate of fire and shooting projectiles
     private void ProcessShooting()
     {
-        Debug.Log("Shooting");
-
+        // Only run rest of method if enemy is in shooting state
         if(enemyState != EnemyState.Shooting)
         {
             fireRateTime = fireRateCountdown;
@@ -94,9 +93,17 @@ public class EnemyShooting : MonoBehaviour
         }
     }
 
+    // Spawns a projectile and applies a force to it
     private void ShootProjectile()
     {
         GameObject projectile = Instantiate(this.projectile, projectileSpawnPosition, this.transform.rotation);
         projectile.GetComponent<Rigidbody>().AddForce(transform.forward * projectileSpeed);
+        projectile.GetComponent<EnemyProjectile>().SetValues(projectileLifespan);
+    }
+
+    // Calculates time between shots based on rate of fire
+    private void ProcessFireRate()
+    {
+        fireRateCountdown = 60f / fireRate;
     }
 }
