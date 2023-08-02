@@ -394,7 +394,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33668f4391654a0419d3a91e0682299c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosion: {fileID: 6355488816765241207, guid: 380621978d1202f4d8329ef044e5fc8b, type: 3}
+  explosionParticles: {fileID: 6355488816765241207, guid: 380621978d1202f4d8329ef044e5fc8b, type: 3}
+  explosionSphere: {fileID: 3616020534452310467, guid: 3a1c9798b2d8f1545a4ed65c30bcac14, type: 3}
 --- !u!4 &848151727
 Transform:
   m_ObjectHideFlags: 0
