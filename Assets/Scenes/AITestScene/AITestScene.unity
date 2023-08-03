@@ -337,6 +337,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b6bee6aced663d4a956abf598a1381c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyState: 0
   detectionDistance: 15
   projectile: {fileID: 1303456030352736496, guid: b6b6f22f4f7f125469863a254d9a0c09, type: 3}
   projectileSpeed: 500
@@ -382,6 +383,8 @@ GameObject:
   - component: {fileID: 765950474}
   - component: {fileID: 765950473}
   - component: {fileID: 765950472}
+  - component: {fileID: 765950476}
+  - component: {fileID: 765950477}
   m_Layer: 0
   m_Name: AI
   m_TagString: Untagged
@@ -419,8 +422,8 @@ MonoBehaviour:
   radius: 0.5
   height: 2
   canMove: 1
-  maxSpeed: 1
-  gravity: {x: NaN, y: NaN, z: NaN}
+  maxSpeed: 2
+  gravity: {x: 0, y: 0, z: 0}
   groundMask:
     serializedVersion: 2
     m_Bits: 115
@@ -438,8 +441,8 @@ MonoBehaviour:
   targetCompatibility: {fileID: 0}
   maxAcceleration: -2.5
   rotationSpeed: 360
-  slowdownDistance: 0.6
-  pickNextWaypointDist: 2
+  slowdownDistance: 0.5
+  pickNextWaypointDist: 0.5
   endReachedDistance: 0.2
   alwaysDrawGizmos: 0
   slowWhenNotFacingTarget: 1
@@ -489,6 +492,42 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &765950476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765950471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b090bec917bbe4c3bbc612ef13f7c4a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 1
+  useRaycasting: 1
+  mask:
+    serializedVersion: 2
+    m_Bits: 115
+  thickRaycast: 1
+  thickRaycastRadius: 1
+  use2DPhysics: 0
+  raycastOffset: {x: 0, y: 0, z: 0}
+  useGraphRaycasting: 0
+  quality: 1
+--- !u!114 &765950477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765950471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa0cb3d1237e8e343961578699d511a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  patrolAreaRadius: 0
 --- !u!1 &840448980
 GameObject:
   m_ObjectHideFlags: 0
@@ -706,7 +745,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1082460078}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10, y: 5, z: 5}
+  m_LocalPosition: {x: -11, y: 5, z: 5}
   m_LocalScale: {x: 10, y: 10, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class EnemyShooting : MonoBehaviour
 {
-    private enum EnemyState {Patrolling, Shooting};
-    private EnemyState enemyState;
+    public enum EnemyState {Patrolling, Shooting};
+    public EnemyState enemyState;
 
     [Header("Player Detection")]
     private GameObject player;
