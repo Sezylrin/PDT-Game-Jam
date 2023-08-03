@@ -527,7 +527,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa0cb3d1237e8e343961578699d511a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  patrolAreaRadius: 0
+  patrolPoint: {fileID: 0}
+  patrolAreaRadius: 5
 --- !u!1 &840448980
 GameObject:
   m_ObjectHideFlags: 0
