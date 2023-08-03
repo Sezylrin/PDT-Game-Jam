@@ -11,14 +11,17 @@ public class FirstPersonCamera : MonoBehaviour
 
     public Transform orientation;
 
+    [SerializeField]
     private float xRotation;
+    [SerializeField]
     private float yRotation;
 
     [SerializeField]
     private PlayerController player;
 
     private Vector2 clampAmount;
-
+    [SerializeField]
+    private float wallRunForward;
     private void Awake()
     {
     }
@@ -33,10 +36,21 @@ public class FirstPersonCamera : MonoBehaviour
     {
         NormalLook();
         ClimbLook();
+        WallRunLook();
     }
+    //((n mod 360) + 360) mod 360
     public void SetMouseX(InputAction.CallbackContext context)
     {
         yRotation += context.ReadValue<float>() * sensX * Time.deltaTime;
+        if (player.CurrentState == PlayerStates.WallRunning)
+        {
+            if (yRotation > wallRunForward + 180f || yRotation < wallRunForward - 180f)
+            {
+                SetYClamp();
+            }
+            yRotation = Mathf.Clamp(yRotation, wallRunForward - 90f, wallRunForward + 90f);
+        }
+        
     }
 
     public void SetMouseY(InputAction.CallbackContext context)
@@ -53,7 +67,7 @@ public class FirstPersonCamera : MonoBehaviour
 
     public void NormalLook()
     {
-        if (player.CurrentState == PlayerStates.Climbing)
+        if (player.CurrentState == PlayerStates.Climbing || player.CurrentState == PlayerStates.WallRunning)
             return;
         transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
@@ -62,6 +76,20 @@ public class FirstPersonCamera : MonoBehaviour
     {
         if (player.CurrentState != PlayerStates.Climbing)
             return;
-        transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0);
+        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
     }
+
+    public void WallRunLook()
+    {
+        if (player.CurrentState != PlayerStates.WallRunning)
+            return;
+        wallRunForward = orientation.eulerAngles.y;
+        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+    }
+
+    public void SetYClamp()
+    {
+        yRotation = ((yRotation % 360) + 360) % 360;
+    }
+
 }

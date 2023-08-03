@@ -11,6 +11,7 @@ public enum PlayerStates
     Crouching,
     Sliding,
     Climbing,
+    WallRunning,
     InAir
 }
 public class PlayerController : MonoBehaviour
@@ -46,13 +47,6 @@ public class PlayerController : MonoBehaviour
     private int timesJumped;
     [SerializeField] [ReadOnly]
     private bool hasDoubleJumped;
-
-    [Header("Wall Climb")]
-    [SerializeField]
-    [ReadOnly]
-    private bool isClimbing;
-    [SerializeField]
-    private float climbSpeed;
 
     [Header("Player States")]
     [SerializeField] [ReadOnly]
@@ -216,6 +210,8 @@ public class PlayerController : MonoBehaviour
             rb.velocity += Vector3.up * Mathf.Sqrt(2f * gravity * jumpHeight);
         }
         timesJumped++;
+        if (wallRun.CheckWall())
+            return;
         if (!hasDoubleJumped && !isGrounded && CurrentState == PlayerStates.InAir)
         {
             hasDoubleJumped = true;
@@ -238,6 +234,10 @@ public class PlayerController : MonoBehaviour
         if (climb.GetClimbing())
         {
             CurrentState = PlayerStates.Climbing;
+        }
+        else if (wallRun.IsWallRunning())
+        {
+            CurrentState = PlayerStates.WallRunning;
         }
         else if (isGrounded)
         {
@@ -317,5 +317,17 @@ public class PlayerController : MonoBehaviour
     public void ToggleGravity(bool toggle)
     {
         isGravity = toggle;
+    }
+
+    public Vector3 HoriVelocity()
+    {
+        Vector3 velocity = rb.velocity;
+        velocity.y = 0;
+        return velocity;
+    }
+
+    public float MaxSpeed()
+    {
+        return forwardSpeed;
     }
 }

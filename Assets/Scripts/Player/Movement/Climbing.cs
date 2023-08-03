@@ -36,6 +36,8 @@ public class Climbing : MonoBehaviour
     private float scanDistance;
     [SerializeField]
     private LayerMask terrain;
+    [SerializeField][Range(0,90)]
+    private int lookAngles;
 
     [Header("Wall Jump")]
     [SerializeField]
@@ -64,7 +66,12 @@ public class Climbing : MonoBehaviour
         {
             if (Physics.Raycast(transform.position,transform.forward, out hit, scanDistance, terrain) && currentClimb < climbDuration)
             {
-                isClimbing = true;
+                Vector3 normDir = hit.normal;
+                normDir.y = 0;
+                normDir.Normalize();
+                float angle = Vector3.Angle(transform.forward, normDir * -1f);
+                if (angle < lookAngles)
+                    isClimbing = true;
             }
         }
         if (isClimbing)

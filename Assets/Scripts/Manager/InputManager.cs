@@ -30,6 +30,7 @@ public class InputManager : MonoBehaviour
         inputs.Player.Climbing.performed += climbing.IsSpace;
         inputs.Player.Jump.performed += climbing.WallJump;
         inputs.Player.WASD.performed += wallRun.CheckInputs;
+        inputs.Player.Jump.performed += wallRun.JumpPressed;
     }
 
     private void OnDisable()
@@ -43,6 +44,7 @@ public class InputManager : MonoBehaviour
         inputs.Player.Climbing.performed -= climbing.IsSpace;
         inputs.Player.Jump.performed -= climbing.WallJump;
         inputs.Player.WASD.performed -= wallRun.CheckInputs;
+        inputs.Player.Jump.performed -= wallRun.JumpPressed;
         inputs.Player.Disable();
     }
     void Start()
