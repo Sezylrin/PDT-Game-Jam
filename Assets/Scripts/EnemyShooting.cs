@@ -16,8 +16,8 @@ public class EnemyShooting : MonoBehaviour
     [SerializeField] private GameObject projectile;
     [SerializeField] private float projectileSpeed;
     [SerializeField] private Vector3 projectileSize;
-    [SerializeField, Range(0, 60), Tooltip("Time in seconds before projectile despawns")] public float projectileLifespan;
-    [SerializeField, Tooltip("Projectiles fired per minute")] private float fireRate;
+    [SerializeField, Range(0, 60), Tooltip("Time in seconds before projectile despawns.")] public float projectileLifespan;
+    [SerializeField, Tooltip("Projectiles fired per minute.")] private float fireRate;
     private float fireRateCountdown;
     private float fireRateTime;
     private Vector3 projectileSpawnPosition;
