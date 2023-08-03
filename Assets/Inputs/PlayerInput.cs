@@ -62,6 +62,24 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Forward"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""4a73a768-61c0-49bd-908d-e405714a8411"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Climbing"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""efc12ccb-5283-4a4f-be0e-f9e0484398da"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -152,6 +170,28 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""MouseY"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""79972b49-546d-4044-b752-c0d956e9b027"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Forward"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""dbfbab21-dd8b-41c6-b388-5a9ec776ea11"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Climbing"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -164,6 +204,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_MouseX = m_Player.FindAction("MouseX", throwIfNotFound: true);
         m_Player_MouseY = m_Player.FindAction("MouseY", throwIfNotFound: true);
+        m_Player_Forward = m_Player.FindAction("Forward", throwIfNotFound: true);
+        m_Player_Climbing = m_Player.FindAction("Climbing", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -229,6 +271,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_MouseX;
     private readonly InputAction m_Player_MouseY;
+    private readonly InputAction m_Player_Forward;
+    private readonly InputAction m_Player_Climbing;
     public struct PlayerActions
     {
         private @PlayerInput m_Wrapper;
@@ -237,6 +281,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @MouseX => m_Wrapper.m_Player_MouseX;
         public InputAction @MouseY => m_Wrapper.m_Player_MouseY;
+        public InputAction @Forward => m_Wrapper.m_Player_Forward;
+        public InputAction @Climbing => m_Wrapper.m_Player_Climbing;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -258,6 +304,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @MouseY.started += instance.OnMouseY;
             @MouseY.performed += instance.OnMouseY;
             @MouseY.canceled += instance.OnMouseY;
+            @Forward.started += instance.OnForward;
+            @Forward.performed += instance.OnForward;
+            @Forward.canceled += instance.OnForward;
+            @Climbing.started += instance.OnClimbing;
+            @Climbing.performed += instance.OnClimbing;
+            @Climbing.canceled += instance.OnClimbing;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -274,6 +326,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @MouseY.started -= instance.OnMouseY;
             @MouseY.performed -= instance.OnMouseY;
             @MouseY.canceled -= instance.OnMouseY;
+            @Forward.started -= instance.OnForward;
+            @Forward.performed -= instance.OnForward;
+            @Forward.canceled -= instance.OnForward;
+            @Climbing.started -= instance.OnClimbing;
+            @Climbing.performed -= instance.OnClimbing;
+            @Climbing.canceled -= instance.OnClimbing;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -297,5 +355,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnMouseX(InputAction.CallbackContext context);
         void OnMouseY(InputAction.CallbackContext context);
+        void OnForward(InputAction.CallbackContext context);
+        void OnClimbing(InputAction.CallbackContext context);
     }
 }

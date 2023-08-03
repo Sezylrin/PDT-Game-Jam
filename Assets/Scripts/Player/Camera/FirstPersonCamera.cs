@@ -14,6 +14,9 @@ public class FirstPersonCamera : MonoBehaviour
     private float xRotation;
     private float yRotation;
 
+    [SerializeField]
+    private PlayerController player;
+
     private Vector2 clampAmount;
 
     private void Awake()
@@ -28,8 +31,8 @@ public class FirstPersonCamera : MonoBehaviour
 
     private void Update()
     {
-        transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
-        orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+        NormalLook();
+        ClimbLook();
     }
     public void SetMouseX(InputAction.CallbackContext context)
     {
@@ -46,5 +49,19 @@ public class FirstPersonCamera : MonoBehaviour
     {
         clampAmount.x = a;
         clampAmount.y = b;
+    }
+
+    public void NormalLook()
+    {
+        if (player.CurrentState == PlayerStates.Climbing)
+            return;
+        transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
+        orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+    }
+    public void ClimbLook()
+    {
+        if (player.CurrentState != PlayerStates.Climbing)
+            return;
+        transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0);
     }
 }

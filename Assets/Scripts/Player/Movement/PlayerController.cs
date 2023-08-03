@@ -10,6 +10,7 @@ public enum PlayerStates
     Grounded,
     Crouching,
     Sliding,
+    Climbing,
     InAir
 }
 public class PlayerController : MonoBehaviour
@@ -37,38 +38,52 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float maxHold = 1;
 
-    [SerializeField][ReadOnly]
+    [SerializeField] [ReadOnly]
     private bool holding;
-    [SerializeField][ReadOnly]
+    [SerializeField] [ReadOnly]
     private float holdTimer;
-    [SerializeField][ReadOnly]
+    [SerializeField] [ReadOnly]
     private int timesJumped;
-    [SerializeField][ReadOnly]
+    [SerializeField] [ReadOnly]
     private bool hasDoubleJumped;
 
+    [Header("Wall Climb")]
+    [SerializeField]
+    [ReadOnly]
+    private bool isClimbing;
+    [SerializeField]
+    private float climbSpeed;
+
     [Header("Player States")]
-    [SerializeField][ReadOnly]
+    [SerializeField] [ReadOnly]
     private bool isGrounded;
 
     [Header("Player Core")]
     [SerializeField]
     private Rigidbody rb;
-    [SerializeField] [ReadOnly]
-    private PlayerStates CurrentState = PlayerStates.Grounded;
+    [field:SerializeField][field:ReadOnly]
+    public PlayerStates CurrentState { get; private set; }
     [SerializeField]
     private LayerMask notPlayer;
 
+    [SerializeField]
+    private Climbing climb;
+    [SerializeField]
+    private WallRunning wallRun;
+
     [Header("Debug Values")]
-    [SerializeField][ReadOnly]
+    [SerializeField] [ReadOnly]
     private Vector2 inputDirection;
-    [SerializeField][ReadOnly]
+    [SerializeField] [ReadOnly]
     private Vector2 speed;
     public TMP_Text velocityVector;
     public TMP_Text velocityVertical;
     public TMP_Text velocityHorizontal;
+
+    private bool isGravity = true;
     private void Awake()
     {
-        
+
     }
     void Start()
     {
@@ -78,7 +93,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        StateChecker();
     }
 
     private void FixedUpdate()
@@ -101,8 +116,7 @@ public class PlayerController : MonoBehaviour
         if (isGrounded && CurrentState == PlayerStates.Grounded)
         {
             Vector2 accel = inputDirection * acceleration * 0.02f;
-            if (isGrounded && CurrentState == PlayerStates.Grounded)
-                accel *= dragAmount;
+            accel *= dragAmount;
             Debug.DrawRay(transform.position, transform.forward * 10, Color.green);
             Vector3 horizontal = rb.velocity;
             horizontal.y = 0;
@@ -170,7 +184,6 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = horizontal + relative + vert;
         }
-        Debug.Log("running");
     }
     [ContextMenu("suddenboost")]
     private void AddForce()
@@ -185,14 +198,14 @@ public class PlayerController : MonoBehaviour
     {
         if (holding && holdTimer < maxHold && rb.velocity.y >= 0)
         {
-            rb.velocity +=  Vector3.up * gravity * 0.02f;
+            rb.velocity += Vector3.up * gravity * 0.02f;
             holdTimer += Time.fixedDeltaTime;
         }
     }
 
     public void TriggerJump(InputAction.CallbackContext context)
     {
-        if (timesJumped < 1)
+        if (timesJumped < 1 && CurrentState != PlayerStates.InAir)
         {
             // Putting it here prevents holding after a release on the second jump.
             rb.drag = 0;
@@ -203,7 +216,7 @@ public class PlayerController : MonoBehaviour
             rb.velocity += Vector3.up * Mathf.Sqrt(2f * gravity * jumpHeight);
         }
         timesJumped++;
-        if (!hasDoubleJumped && !isGrounded)
+        if (!hasDoubleJumped && !isGrounded && CurrentState == PlayerStates.InAir)
         {
             hasDoubleJumped = true;
             holding = true;
@@ -220,15 +233,30 @@ public class PlayerController : MonoBehaviour
         holdTimer = 0;
     }
 
+    private void StateChecker()
+    {
+        if (climb.GetClimbing())
+        {
+            CurrentState = PlayerStates.Climbing;
+        }
+        else if (isGrounded)
+        {
+            CurrentState = PlayerStates.Grounded;
+        }
+        else if (!isGrounded)
+        {
+            CurrentState = PlayerStates.InAir;
+        }
+    }
     private void CheckOnGround()
     {
         RaycastHit hit;
         if (Physics.Raycast(transform.position,Vector3.down, out hit, playerSize, notPlayer))
         {
             isGrounded = true;
-            if (CurrentState == PlayerStates.InAir)
+            climb.ResetWallClimb();
+            if (CurrentState != PlayerStates.Grounded)
             {
-                CurrentState = PlayerStates.Grounded;
                 Vector3 velocity = rb.velocity;
                 velocity.y = 0;
                 rb.velocity = velocity;
@@ -243,13 +271,14 @@ public class PlayerController : MonoBehaviour
             
             if (CurrentState != PlayerStates.InAir)
             {
-                CurrentState = PlayerStates.InAir;
                 rb.drag = 0;
             }
         }
     }
     private void Gravity()
     {
+        if (!isGravity)
+            return;
         if (!isGrounded)
         {
             Vector3 proj = Vector3.Project(rb.velocity, Vector3.down);
@@ -265,6 +294,7 @@ public class PlayerController : MonoBehaviour
 
         }
     }
+    
 
     private void DebugVelocity()
     {
@@ -277,5 +307,15 @@ public class PlayerController : MonoBehaviour
     {
         speed.x = forwardSpeed;
         speed.y = normalSpeed;
+    }
+
+    public void SetState(PlayerStates stateToSet)
+    {
+        CurrentState = stateToSet;
+    }
+
+    public void ToggleGravity(bool toggle)
+    {
+        isGravity = toggle;
     }
 }

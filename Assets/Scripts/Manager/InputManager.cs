@@ -10,6 +10,10 @@ public class InputManager : MonoBehaviour
     private PlayerController player;
     [SerializeField]
     private FirstPersonCamera Camera;
+    [SerializeField]
+    private Climbing climbing;
+    [SerializeField]
+    private WallRunning wallRun;
     private void Awake()
     {
         inputs = new PlayerInput();
@@ -22,6 +26,10 @@ public class InputManager : MonoBehaviour
         inputs.Player.MouseY.performed += Camera.SetMouseY;
         inputs.Player.Jump.performed += player.TriggerJump;
         inputs.Player.Jump.canceled += player.CancelJump;
+        inputs.Player.Forward.performed += climbing.IsForward;
+        inputs.Player.Climbing.performed += climbing.IsSpace;
+        inputs.Player.Jump.performed += climbing.WallJump;
+        inputs.Player.WASD.performed += wallRun.CheckInputs;
     }
 
     private void OnDisable()
@@ -31,6 +39,10 @@ public class InputManager : MonoBehaviour
         inputs.Player.MouseY.performed -= Camera.SetMouseY;
         inputs.Player.Jump.performed -= player.TriggerJump;
         inputs.Player.Jump.canceled -= player.CancelJump;
+        inputs.Player.Forward.performed -= climbing.IsForward;
+        inputs.Player.Climbing.performed -= climbing.IsSpace;
+        inputs.Player.Jump.performed -= climbing.WallJump;
+        inputs.Player.WASD.performed -= wallRun.CheckInputs;
         inputs.Player.Disable();
     }
     void Start()
