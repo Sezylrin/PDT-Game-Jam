@@ -44,11 +44,7 @@ public class FirstPersonCamera : MonoBehaviour
         yRotation += context.ReadValue<float>() * sensX * Time.deltaTime;
         if (player.CurrentState == PlayerStates.WallRunning)
         {
-            if (yRotation > wallRunForward + 180f || yRotation < wallRunForward - 180f)
-            {
-                SetYClamp();
-            }
-            yRotation = Mathf.Clamp(yRotation, wallRunForward - 90f, wallRunForward + 90f);
+            
         }
         
     }
@@ -84,6 +80,19 @@ public class FirstPersonCamera : MonoBehaviour
         if (player.CurrentState != PlayerStates.WallRunning)
             return;
         wallRunForward = orientation.eulerAngles.y;
+        if (yRotation + 360 > wallRunForward - 90f && yRotation + 360 < wallRunForward + 90f)
+        {
+            yRotation += 360;
+        }
+        else if (yRotation - 360 > wallRunForward - 90f && yRotation - 360 < wallRunForward + 90f)
+        {
+            yRotation -= 360;
+        }
+        else if (yRotation > wallRunForward + 180f || yRotation < wallRunForward - 180f)
+        {
+            SetYClamp();
+        }
+        yRotation = Mathf.Clamp(yRotation, wallRunForward - 90f, wallRunForward + 90f);
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
     }
 
