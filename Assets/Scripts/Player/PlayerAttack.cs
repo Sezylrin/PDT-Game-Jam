@@ -62,11 +62,11 @@ public class PlayerAttack : MonoBehaviour
 
         /*if (isCooldown)
         {
-            Debug.Log("1. Starting Attack");
+            Debug.Log("Starting Attack");
         }
         else
         {
-            Debug.Log("X. On Cooldown");
+            Debug.Log("On Cooldown");
         }*/
     }
 
@@ -79,36 +79,14 @@ public class PlayerAttack : MonoBehaviour
 
             if (isCharged)
             {
-                StartCoroutine(ChargeAttack());
+                // A large attack that damages enemies in front of the player with more range, damage, knockback. 
+                StartCoroutine(PrimaryAttack(chargedRadius, chargedKnockback, chargedDamage));
             }
             else
             {
-                StartCoroutine(StandardAttack());
+                // Attack that damages enemies in front of the player
+                StartCoroutine(PrimaryAttack(standardRadius, standardKnockback, standardDamage));
             }
-        }
-    }
-
-    // Attack that damages enemies in front of the player
-    private IEnumerator StandardAttack()
-    {
-        //Debug.Log("2. Standard Attack");
-        yield return new WaitForSeconds(attackDelay);
-        Vector3 position = transform.position + Vector3.forward * standardRadius;
-        Collider[] collisions = Physics.OverlapSphere(position, standardRadius, 256); // 256 = enemy layer
-        float knockback;
-
-        if (enableDebugSphere)
-        {
-            StartCoroutine(DebugSphere(position, standardRadius));
-        }
-
-        for (int i = 0; i < collisions.Length; i++)
-        {
-            collisions[i].attachedRigidbody.velocity = Vector3.zero;
-            knockback = Mathf.Lerp(standardKnockback, 1, (Vector3.Distance(transform.position, collisions[i].transform.position) - distanceThreshold)/ (standardRadius * 2));
-            //Debug.Log(knockback);
-            collisions[i].attachedRigidbody.AddForce(transform.forward * knockback, ForceMode.VelocityChange);
-            // collisions[i].gameObject.EnemyHealth.TakeDamage(standardDamage); //!!! for when enemy health is created which should theoretically work !!!
         }
     }
 
@@ -117,35 +95,39 @@ public class PlayerAttack : MonoBehaviour
     {
         if (isCooldown)
         {
-            //Debug.Log("3. Full Charge");
+            //Debug.Log("Full Charge");
             isCharged = true;
         }
     }
 
-    // A large attack that damages enemies in front of the player with more range, damage, knockback. 
-    private IEnumerator ChargeAttack()
+    private IEnumerator PrimaryAttack(float radius, float knockback, float damage)
     {
-        //Debug.Log("4. Charged Attack");
         yield return new WaitForSeconds(attackDelay);
-        Vector3 position = transform.position + Vector3.forward * chargedRadius;
-        Collider[] collisions = Physics.OverlapSphere(position, chargedRadius, 256); // 256 = enemy layer
-        float knockback;
+
+        Vector3 position = transform.position + Vector3.forward * radius;
+        Collider[] collisions = Physics.OverlapSphere(position, radius, 256); // 256 = enemy layer
+
+        float currentKnockback;
 
         if (enableDebugSphere)
         {
-            StartCoroutine(DebugSphere(position, chargedRadius));
+            StartCoroutine(DebugSphere(position, radius));
         }
 
         for (int i = 0; i < collisions.Length; i++)
         {
             collisions[i].attachedRigidbody.velocity = Vector3.zero;
-            knockback = Mathf.Lerp(chargedKnockback, 1, (Vector3.Distance(transform.position, collisions[i].transform.position) - distanceThreshold) / (chargedRadius * 2));
+            currentKnockback = Mathf.Lerp(knockback, 1, (Vector3.Distance(transform.position, collisions[i].transform.position) - distanceThreshold) / (radius * 2));
             //Debug.Log(knockback);
-            collisions[i].attachedRigidbody.AddForce(transform.forward * knockback, ForceMode.VelocityChange);
-            // collisions[i].gameObject.EnemyHealth.TakeDamage(chargedDamage); //!!! for when enemy health is created which should theoretically work !!!
+            collisions[i].attachedRigidbody.AddForce(transform.forward * currentKnockback, ForceMode.VelocityChange);
+            // collisions[i].gameObject.EnemyHealth.TakeDamage(standardDamage); //!!! for when enemy health is created which should theoretically work !!!
         }
+    }
 
-        isCharged = false;
+    // Pushes enemies to other nearby enemies
+    private bool ReboundEntity()
+    {
+        return true;
     }
 
     private IEnumerator DebugSphere(Vector3 position, float radius)
