@@ -104,32 +104,40 @@ public class PlayerAttack : MonoBehaviour
     {
         yield return new WaitForSeconds(attackDelay);
 
-        Vector3 position = transform.position + Vector3.forward * radius;
-        Collider[] collisions = Physics.OverlapSphere(position, radius, 256); // 256 = enemy layer
-
         float currentKnockback;
+        Vector3 position = transform.position + Vector3.forward * radius;
+        Vector3 direction;
 
         if (enableDebugSphere)
         {
             StartCoroutine(DebugSphere(position, radius));
         }
 
-        for (int i = 0; i < collisions.Length; i++)
+        Collider[] enemies = Physics.OverlapSphere(position, radius, 256); // 256 = Enemy layer
+
+        // Knockback enemies within the sphere
+        for (int i = 0; i < enemies.Length; i++)
         {
-            collisions[i].attachedRigidbody.velocity = Vector3.zero;
-            currentKnockback = Mathf.Lerp(knockback, 1, (Vector3.Distance(transform.position, collisions[i].transform.position) - distanceThreshold) / (radius * 2));
-            //Debug.Log(knockback);
-            collisions[i].attachedRigidbody.AddForce(transform.forward * currentKnockback, ForceMode.VelocityChange);
+            enemies[i].attachedRigidbody.velocity = Vector3.zero;
+            currentKnockback = Mathf.Lerp(knockback, 1, (Vector3.Distance(transform.position, enemies[i].transform.position) - distanceThreshold) / (radius * 2));
+            direction = Vector3.Normalize(enemies[i].transform.position - transform.position);
+            enemies[i].attachedRigidbody.AddForce(direction * currentKnockback, ForceMode.VelocityChange);
             // collisions[i].gameObject.EnemyHealth.TakeDamage(standardDamage); //!!! for when enemy health is created which should theoretically work !!!
+        }
+
+        // Charged Attacks reflect bullets within the sphere
+        if (isCharged)
+        {
+            Collider[] bullets = Physics.OverlapSphere(position, radius, 4); // 4 = Ignore Raycast layer, which the bullet is using. However, the bullet should be moved to its own layer.
+
+            for (int i = 0; i < bullets.Length; i++)
+            {
+                bullets[i].attachedRigidbody.velocity *= -1;
+            }
         }
     }
 
-    // Pushes enemies to other nearby enemies
-    private bool ReboundEntity()
-    {
-        return true;
-    }
-
+    // Visualizes the hitbox
     private IEnumerator DebugSphere(Vector3 position, float radius)
     {
         GameObject temp = Instantiate(hitboxSphere, position, new Quaternion());
