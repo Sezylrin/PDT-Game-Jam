@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerAttack : MonoBehaviour
 {
     public Animator animator; // left public in case the attack animation is a child of the player
-    public Camera camera; // left public in case camera is not within the player
+    public Camera playerCamera; // left public in case camera is not within the player
 
     [Header("Main Stats")]
     public float attackCooldown = 0.5f;
@@ -96,7 +96,7 @@ public class PlayerAttack : MonoBehaviour
         yield return new WaitForSeconds(attackDelay);
 
         float currentKnockback;
-        Vector3 position = camera.transform.position + camera.transform.forward * radius;
+        Vector3 position = playerCamera.transform.position + playerCamera.transform.forward * radius;
         Vector3 direction;
 
         if (enableDebugSphere)
@@ -109,6 +109,7 @@ public class PlayerAttack : MonoBehaviour
         // Knockback enemies within the sphere
         for (int i = 0; i < enemies.Length; i++)
         {
+            //Debug.Log(enemies[i].gameObject.name);
             enemies[i].attachedRigidbody.velocity = Vector3.zero;
             currentKnockback = Mathf.Lerp(knockback, 1, (Vector3.Distance(transform.position, enemies[i].transform.position) - distanceThreshold) / (radius * 2));
             direction = Vector3.Normalize(enemies[i].transform.position - transform.position);
@@ -119,7 +120,7 @@ public class PlayerAttack : MonoBehaviour
         // Charged Attacks reflect bullets within the sphere
         if (isCharged)
         {
-            Collider[] bullets = Physics.OverlapSphere(position, radius, 4); // 4 = Ignore Raycast layer, which the bullet is using. However, the bullet should be moved to its own layer.
+            Collider[] bullets = Physics.OverlapSphere(position, radius, 512); // 512 = Enemy Projectile Layer
 
             for (int i = 0; i < bullets.Length; i++)
             {

@@ -4,32 +4,36 @@ using UnityEngine;
 
 public class EnemyShooting : MonoBehaviour
 {
-    public enum EnemyState {Patrolling, Shooting};
+    public enum EnemyState { Patrolling, Shooting };
     public EnemyState enemyState;
+    [Tooltip("The mesh of the enemy that rotates to the player")] public Transform mesh;
+    //public GameObject turret; !!! when the enemy gun has a separate model
+    [Tooltip("The speed which the turret turns")] public float lookSpeed;
 
     [Header("Player Detection")]
-    private GameObject player;
+    private Transform player;
     [SerializeField] private float detectionDistance;
     private float distanceFromPlayer;
 
     [Header("Projectile Properties")]
     [SerializeField] private GameObject projectile;
+    [SerializeField, Tooltip("The required angle between \"where it wants to look at\" VS \"where it is currently looking at\" before it start shooting")] private float requiredAngle;
     [SerializeField] private float projectileSpeed;
     [SerializeField] private Vector3 projectileSize;
     [SerializeField, Range(0, 60), Tooltip("Time in seconds before projectile despawns.")] public float projectileLifespan;
     [SerializeField, Tooltip("Projectiles fired per minute.")] private float fireRate;
+    [SerializeField, Tooltip("The offset position from parent where the projectile spawns")] private Transform nuzzlePosition;
+    private Vector3 spawnPosition;
     private float fireRateCountdown;
     private float fireRateTime;
-    private Vector3 projectileSpawnPosition;
 
     private void Start()
     {
-        player = GameObject.FindWithTag(Tags.T_Player);
+        player = GameObject.FindWithTag(Tags.T_Player).transform;
     }
 
     private void Update()
     {
-        projectileSpawnPosition = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
         ProcessDetection();
         ProcessFireRate();
     }
@@ -43,13 +47,19 @@ public class EnemyShooting : MonoBehaviour
     private void ProcessDetection()
     {
         // Gets distance from player every update frame
-        distanceFromPlayer = Vector3.Distance(player.transform.position, this.transform.position);
+        distanceFromPlayer = Vector3.Distance(player.position, this.transform.position);
 
         // Set state depending on conditions
         if(distanceFromPlayer <= detectionDistance && IsPlayerVisible())
         {
-            this.transform.LookAt(player.transform);
-            enemyState = EnemyState.Shooting;
+            if (Physics.Raycast(transform.position, player.position - transform.position, detectionDistance, ~8)) // 8 = Player Layer
+            {
+                enemyState = EnemyState.Shooting;
+                Vector3 dir = (player.position - transform.position).normalized;
+                dir.y = 0;
+                Quaternion lookRot = Quaternion.LookRotation(dir, Vector3.up);
+                mesh.rotation = Quaternion.Lerp(mesh.rotation, lookRot, Time.deltaTime * lookSpeed);
+            }
         }
         else
         {
@@ -60,7 +70,7 @@ public class EnemyShooting : MonoBehaviour
     // Checks if player is within line of sight with raycast
     private bool IsPlayerVisible()
     {
-        Vector3 raycastDirection = player.transform.position - this.transform.position;
+        Vector3 raycastDirection = player.position - this.transform.position;
         RaycastHit hit;
         if(Physics.Raycast(this.transform.position, raycastDirection, out hit))
         {
@@ -86,18 +96,33 @@ public class EnemyShooting : MonoBehaviour
         {
             fireRateTime -= Time.deltaTime;
         }
-        else
+        else 
         {
-            ShootProjectile();
-            fireRateTime = fireRateCountdown;
+            // Check if enemy is alligned enough before shooting
+            Vector3 dir = (player.position - transform.position).normalized;
+            if (Vector3.Angle(nuzzlePosition.forward, dir) < requiredAngle)
+            {
+                ShootProjectile();
+                fireRateTime = fireRateCountdown;
+            }
         }
     }
 
     // Spawns a projectile and applies a force to it
     private void ShootProjectile()
     {
-        GameObject projectile = Instantiate(this.projectile, projectileSpawnPosition, this.transform.rotation);
-        projectile.GetComponent<Rigidbody>().AddForce(transform.forward * projectileSpeed);
+        if (nuzzlePosition)
+        {
+            spawnPosition = nuzzlePosition.position;
+        }
+        else
+        {
+            spawnPosition = transform.position;
+        }
+
+        Vector3 dir = (player.position - spawnPosition).normalized;
+        GameObject projectile = Instantiate(this.projectile, spawnPosition, Quaternion.LookRotation(dir, Vector3.up));
+        projectile.GetComponent<Rigidbody>().AddForce(dir * projectileSpeed);
         projectile.GetComponent<EnemyProjectile>().SetValues(projectileLifespan);
     }
 

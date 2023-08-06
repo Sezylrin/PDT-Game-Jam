@@ -200,7 +200,7 @@ MonoBehaviour:
   vertVel: 3
   lookAngles: {x: 120, y: 60}
   jumpHeight: 6
-  jumpStrength: 7
+  jumpStrength: 4
   terrain:
     serializedVersion: 2
     m_Bits: 51
@@ -217,7 +217,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 0}
-  camera: {fileID: 1002643936291793728}
+  playerCamera: {fileID: 0}
   attackCooldown: 0.5
   attackDelay: 0
   distanceThreshold: 3
@@ -228,7 +228,7 @@ MonoBehaviour:
   chargeTime: 1
   chargedDamage: 40
   chargedRadius: 5
-  chargedKnockback: 450
+  chargedKnockback: 250
   enableDebugSphere: 1
   hitboxSphere: {fileID: 4586088745463712437, guid: 3a248c7b186386b40b4d6196fc07a36f, type: 3}
   debugLifetime: 0

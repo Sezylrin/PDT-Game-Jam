@@ -12,6 +12,7 @@ public class EnemyPathfinding : MonoBehaviour
     private enum PatrolBehaviour {PatrolArea, PatrolPath, Stationary};
     [SerializeField] private PatrolBehaviour patrolBehaviour;
     [SerializeField, Tooltip("Follow the player when the player is detected. When false, become stationary when the player is detected.")] private bool followPlayer;
+    [SerializeField, Tooltip("The spacing between the enemy and player during follow")] private float followSpacing;
 
     [Header("Patrol Area")]
     [SerializeField, Tooltip("If null then a patrolPoint will be generated at the enemy's position on Start.")] private GameObject patrolPoint;
@@ -81,8 +82,15 @@ public class EnemyPathfinding : MonoBehaviour
                     AIDestinationSetter.target = this.transform;
                     break;
                 }
-                // Follow the player player
+
+                // Follow the player
                 AIDestinationSetter.target = player.transform;
+
+                // Prevent the enemy from moving too close to the player
+                if (Vector3.Distance(transform.position, player.transform.position) < followSpacing)
+                {
+                    AIDestinationSetter.target = this.transform;
+                }
                 break;
             
             default:
@@ -123,8 +131,20 @@ public class EnemyPathfinding : MonoBehaviour
     // The size of the circular area is dependant on the patrolAreaRadius float
     private void MovePatrolTarget()
     {
-        Vector2 rand = Random.insideUnitCircle * patrolAreaRadius;
-        patrolTarget.transform.position = new Vector3(patrolPoint.transform.position.x + rand.x, patrolPoint.transform.position.y, patrolPoint.transform.position.z + rand.y);
+        RaycastHit hit; // Using raycast to prevent picking target through walls
+        float angle = Random.Range(0.0f, 360.0f);
+        float rad = Random.Range(0, patrolAreaRadius);
+        Vector3 dir = Quaternion.Euler(0.0f, angle, 0.0f) * Vector3.forward;
+        Vector3 pos = dir * rad + transform.position - dir * 0.5f; // Default position if raycast doens't collide
+
+        if (Physics.Raycast(transform.position, dir, out hit, rad, 65)) // 65 = 1 + 64 = Default Layer + Obstacle Layer
+        {
+            Debug.Log(hit.point - dir * 0.5f);
+            pos = hit.point - dir * 0.5f;
+        }
+
+        patrolTarget.transform.position = pos;
+        Debug.Log("Picking pos: " + pos);
     }
 
     // Finds next the next patrol point on the path
