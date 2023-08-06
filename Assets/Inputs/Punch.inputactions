@@ -1,0 +1,34 @@
+{
+    "name": "Punch",
+    "maps": [
+        {
+            "name": "Gameplay",
+            "id": "e4006d40-ac57-4aec-b303-46ab6d46f63f",
+            "actions": [
+                {
+                    "name": "Attack",
+                    "type": "Button",
+                    "id": "60ae1fc4-476f-4796-a8db-29c94dc24a12",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "7bdbe6da-85fa-4bc2-9ff6-4c0808fc1928",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "Hold(duration=1)",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
