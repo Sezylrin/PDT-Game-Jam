@@ -948,8 +948,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ab8373ea55e050438ed262c1ba1b5e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sensX: 10
-  sensY: 10
+  sensX: 20
+  sensY: 20
   orientation: {fileID: 1317772230}
   xRotation: 0
   yRotation: 0
@@ -1151,9 +1151,9 @@ MonoBehaviour:
   minVelocity: 0
   minLookAngle: 20
   vertVel: 3
-  lookAngles: {x: 120, y: 30}
+  lookAngles: {x: 120, y: 60}
   jumpHeight: 6
-  jumpStrength: 4
+  jumpStrength: 7
   terrain:
     serializedVersion: 2
     m_Bits: 51
