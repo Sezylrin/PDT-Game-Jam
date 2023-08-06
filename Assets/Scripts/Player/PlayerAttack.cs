@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerAttack : MonoBehaviour
 {
     public Animator animator; // left public in case the attack animation is a child of the player
+    public Camera camera; // left public in case camera is not within the player
 
     [Header("Main Stats")]
     public float attackCooldown = 0.5f;
@@ -33,20 +34,10 @@ public class PlayerAttack : MonoBehaviour
     private bool isCooldown;
     private float timer;
 
-    private Punch inputs; // !!! must be moved and implemented in input manager when merged !!!
-
-    void Awake()
-    {
-        inputs = new Punch(); // !!! must be moved and implemented in input manager when merged !!!
-    }
-
     // Start is called before the first frame update
     void Start()
     {
-        inputs.Enable(); // !!! must be moved and implemented in input manager when merged !!!
-        inputs.Gameplay.Attack.started += OnAttack; // !!! must be moved and implemented in input manager when merged !!!
-        inputs.Gameplay.Attack.canceled += ReleaseAttack; // !!! must be moved and implemented in input manager when merged !!!
-        inputs.Gameplay.Attack.performed += FullCharge; // !!! must be moved and implemented in input manager when merged !!!
+        
     }
 
     // Update is called once per frame
@@ -105,7 +96,7 @@ public class PlayerAttack : MonoBehaviour
         yield return new WaitForSeconds(attackDelay);
 
         float currentKnockback;
-        Vector3 position = transform.position + Vector3.forward * radius;
+        Vector3 position = camera.transform.position + camera.transform.forward * radius;
         Vector3 direction;
 
         if (enableDebugSphere)
@@ -134,6 +125,8 @@ public class PlayerAttack : MonoBehaviour
             {
                 bullets[i].attachedRigidbody.velocity *= -1;
             }
+
+            isCharged = false;
         }
     }
 

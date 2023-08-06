@@ -6,6 +6,7 @@ public class InputManager : MonoBehaviour
 {
     // Start is called before the first frame update
     private PlayerInput inputs;
+    private Punch punch;
     [SerializeField]
     private PlayerController player;
     [SerializeField]
@@ -14,9 +15,12 @@ public class InputManager : MonoBehaviour
     private Climbing climbing;
     [SerializeField]
     private WallRunning wallRun;
+    [SerializeField]
+    private PlayerAttack attack;
     private void Awake()
     {
         inputs = new PlayerInput();
+        punch = new Punch();
     }
     private void OnEnable()
     {
@@ -31,6 +35,11 @@ public class InputManager : MonoBehaviour
         inputs.Player.Jump.performed += climbing.WallJump;
         inputs.Player.WASD.performed += wallRun.CheckInputs;
         inputs.Player.Jump.performed += wallRun.JumpPressed;
+
+        punch.Enable(); 
+        punch.Gameplay.Attack.started += attack.OnAttack; 
+        punch.Gameplay.Attack.canceled += attack.ReleaseAttack;
+        punch.Gameplay.Attack.performed += attack.FullCharge;
     }
 
     private void OnDisable()
@@ -46,6 +55,11 @@ public class InputManager : MonoBehaviour
         inputs.Player.WASD.performed -= wallRun.CheckInputs;
         inputs.Player.Jump.performed -= wallRun.JumpPressed;
         inputs.Player.Disable();
+
+        punch.Gameplay.Attack.started -= attack.OnAttack;
+        punch.Gameplay.Attack.canceled -= attack.ReleaseAttack;
+        punch.Gameplay.Attack.performed -= attack.FullCharge;
+        punch.Enable();
     }
     void Start()
     {
