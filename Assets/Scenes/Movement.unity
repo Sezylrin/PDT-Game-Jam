@@ -1043,8 +1043,6 @@ MonoBehaviour:
   holdTimer: 0
   timesJumped: 0
   hasDoubleJumped: 0
-  isClimbing: 0
-  climbSpeed: 100
   isGrounded: 0
   rb: {fileID: 1317772232}
   <CurrentState>k__BackingField: 0
@@ -1126,6 +1124,7 @@ MonoBehaviour:
   terrain:
     serializedVersion: 2
     m_Bits: 55
+  lookAngles: 20
   horiForce: 5
   vertForce: 4
 --- !u!114 &1317772235
@@ -1147,10 +1146,14 @@ MonoBehaviour:
   rb: {fileID: 1317772232}
   player: {fileID: 1317772231}
   camTr: {fileID: 1247139194}
+  fpsCam: {fileID: 1247139195}
   scanDist: 2
   minVelocity: 0
   minLookAngle: 20
   vertVel: 3
+  lookAngles: {x: 120, y: 30}
+  jumpHeight: 6
+  jumpStrength: 4
   terrain:
     serializedVersion: 2
     m_Bits: 51
