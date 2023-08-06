@@ -34,18 +34,26 @@ public class FirstPersonCamera : MonoBehaviour
 
     private void Update()
     {
-        NormalLook();
-        ClimbLook();
-        WallRunLook();
+        switch ((int)player.CurrentState)
+        {
+            case (int)PlayerStates.Climbing:
+                ClimbLook();
+                break;
+            case (int)PlayerStates.WallRunning:
+                WallRunLook();
+                break;
+            case (int)PlayerStates.Sliding:
+                SlideLook();
+                break;
+            default:
+                NormalLook();
+                break;
+        }
     }
     //((n mod 360) + 360) mod 360
     public void SetMouseX(InputAction.CallbackContext context)
     {
         yRotation += context.ReadValue<float>() * sensX * Time.deltaTime;
-        if (player.CurrentState == PlayerStates.WallRunning)
-        {
-            
-        }
         
     }
 
@@ -63,22 +71,25 @@ public class FirstPersonCamera : MonoBehaviour
 
     public void NormalLook()
     {
-        if (player.CurrentState == PlayerStates.Climbing || player.CurrentState == PlayerStates.WallRunning)
-            return;
+        
         transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
     }
     public void ClimbLook()
     {
-        if (player.CurrentState != PlayerStates.Climbing)
-            return;
+        
+        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+    }
+
+    public void SlideLook()
+    {
+        
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
     }
 
     public void WallRunLook()
     {
-        if (player.CurrentState != PlayerStates.WallRunning)
-            return;
+        
         wallRunForward = orientation.eulerAngles.y;
         if (yRotation + 360 > wallRunForward - 90f && yRotation + 360 < wallRunForward + 90f)
         {

@@ -24,14 +24,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float normalSpeed;
     [SerializeField]
-    private float crouchFactor;
-    [SerializeField]
     private float playerSize;
-    [SerializeField]
-    private float gravity;
+    [field:SerializeField]
+    public float gravity { get; private set; }
     [SerializeField]
     private float terminalVelocity;
-    private float dragAmount;
+    [HideInInspector]
+    public float dragAmount { get; private set; }
+
+    private Vector2 speed;
 
     [Header("Jump Setting")]
     [SerializeField]
@@ -39,7 +40,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float maxHold = 1;
 
-    [SerializeField] [ReadOnly]
+
+    [SerializeField][ReadOnly]
     private bool holding;
     [SerializeField] [ReadOnly]
     private float holdTimer;
@@ -48,6 +50,29 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [ReadOnly]
     private bool hasDoubleJumped;
 
+    [Header("Crouch Setting")]
+    [SerializeField][ReadOnly]
+    private bool isCrouch;
+    [SerializeField][ReadOnly]
+    private bool isCrouching;
+    [SerializeField]
+    private float crouchHeight;
+    private Vector3 crouchPos;
+    private Vector3 unCrouchPos;
+
+    [field:SerializeField]
+    public float crouchSpeed { get; private set; }
+    [field:SerializeField]
+    public float crouchTriggerSpeed { get; private set; }
+
+    private RaycastHit slopeHit;
+
+    [field: Header("Slope Setting")]
+    [field:SerializeField][field:ReadOnly]
+    public float slopeAngle { get; private set; }
+    [field:SerializeField][field:ReadOnly]
+    public bool isSlope { get; private set; }
+
     [Header("Player States")]
     [SerializeField] [ReadOnly]
     private bool isGrounded;
@@ -55,6 +80,11 @@ public class PlayerController : MonoBehaviour
     [Header("Player Core")]
     [SerializeField]
     private Rigidbody rb;
+    [SerializeField]
+    private CapsuleCollider col;
+    [SerializeField]
+    private Transform camTr;
+
     [field:SerializeField][field:ReadOnly]
     public PlayerStates CurrentState { get; private set; }
     [SerializeField]
@@ -64,12 +94,12 @@ public class PlayerController : MonoBehaviour
     private Climbing climb;
     [SerializeField]
     private WallRunning wallRun;
+    [SerializeField]
+    private Sliding slide;
 
     [Header("Debug Values")]
     [SerializeField] [ReadOnly]
     private Vector2 inputDirection;
-    [SerializeField] [ReadOnly]
-    private Vector2 speed;
     public TMP_Text velocityVector;
     public TMP_Text velocityVertical;
     public TMP_Text velocityHorizontal;
@@ -82,12 +112,15 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         dragAmount = rb.drag;
-        ResetSpeed();
+        speed = new Vector2(forwardSpeed, normalSpeed);
+        unCrouchPos = camTr.localPosition;
+        crouchPos = unCrouchPos + (Vector3.down * crouchHeight);
     }
     // Update is called once per frame
     void Update()
     {
         StateChecker();
+        SetCrouching();
     }
 
     private void FixedUpdate()
@@ -107,26 +140,35 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        if (isGrounded && CurrentState == PlayerStates.Grounded)
+        if (isGrounded && (CurrentState == PlayerStates.Grounded || CurrentState == PlayerStates.Crouching))
         {
-            Vector2 accel = inputDirection * acceleration * 0.02f;
+            Vector2 accel = inputDirection * acceleration * Time.fixedDeltaTime;
             accel *= dragAmount;
             Debug.DrawRay(transform.position, transform.forward * 10, Color.green);
             Vector3 horizontal = rb.velocity;
             horizontal.y = 0;
             Vector3 relative = transform.forward * accel.x + transform.right * accel.y;
+            if (isSlope)
+            {
+                float relativeMag = relative.magnitude;
+                relative = Vector3.ProjectOnPlane(relative, slopeHit.normal);
+                relative.Normalize();
+                relative *= relativeMag;
+                if (accel != Vector2.zero)
+                relative += Vector3.down;
+            }
             if (accel.x > 0)
             {
-                if ((horizontal + relative).magnitude <= forwardSpeed)
+                if ((horizontal + relative).magnitude <= speed.x)
                     rb.velocity += relative;
-                else if (horizontal.magnitude < forwardSpeed)
+                else if (horizontal.magnitude < speed.x)
                 {
                     Vector3 vert = rb.velocity;
                     vert.x = 0;
                     vert.z = 0;
-                    rb.velocity = (horizontal + relative).normalized * forwardSpeed + vert;
+                    rb.velocity = (horizontal + relative).normalized * speed.x + vert;
                 }
-                else if (horizontal.magnitude > forwardSpeed)
+                else if (horizontal.magnitude > speed.x)
                 {
                     Vector3 vert = rb.velocity;
                     vert.x = 0;
@@ -136,16 +178,16 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                if ((horizontal + relative).magnitude <= normalSpeed)
+                if ((horizontal + relative).magnitude <= speed.y)
                     rb.velocity += relative;
-                else if (horizontal.magnitude < normalSpeed)
+                else if (horizontal.magnitude < speed.y)
                 {
                     Vector3 vert = rb.velocity;
                     vert.x = 0;
                     vert.z = 0;
-                    rb.velocity = (horizontal + relative).normalized * normalSpeed + vert;
+                    rb.velocity = (horizontal + relative).normalized * speed.y + vert;
                 }
-                else if (horizontal.magnitude > normalSpeed)
+                else if (horizontal.magnitude > speed.y)
                 {
                     Vector3 vert = rb.velocity;
                     vert.x = 0;
@@ -160,7 +202,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isGrounded || CurrentState != PlayerStates.InAir)
             return;
-        Vector2 accel = inputDirection * acceleration * 0.02f;
+        Vector2 accel = inputDirection * acceleration * Time.fixedDeltaTime;
         Vector3 horizontal = rb.velocity;
         horizontal.y = 0;
         Vector3 vert = rb.velocity;
@@ -192,15 +234,16 @@ public class PlayerController : MonoBehaviour
     {
         if (holding && holdTimer < maxHold && rb.velocity.y >= 0)
         {
-            rb.velocity += Vector3.up * gravity * 0.02f;
+            rb.velocity += Vector3.up * gravity * Time.fixedDeltaTime;
             holdTimer += Time.fixedDeltaTime;
         }
     }
 
     public void TriggerJump(InputAction.CallbackContext context)
     {
-        if (timesJumped < 1 && CurrentState != PlayerStates.InAir)
+        if (timesJumped < 1 && isGrounded)
         {
+            
             // Putting it here prevents holding after a release on the second jump.
             rb.drag = 0;
             holding = true;
@@ -211,6 +254,10 @@ public class PlayerController : MonoBehaviour
         }
         timesJumped++;
         if (wallRun.CheckWall())
+            return;
+        if (climb.IsStartClimb())
+            return;
+        if (climb.GetClimbing())
             return;
         if (!hasDoubleJumped && !isGrounded && CurrentState == PlayerStates.InAir)
         {
@@ -239,6 +286,14 @@ public class PlayerController : MonoBehaviour
         {
             CurrentState = PlayerStates.WallRunning;
         }
+        else if (slide.GetSliding())
+        {
+            CurrentState = PlayerStates.Sliding;
+        }
+        else if (isCrouching)
+        {
+            CurrentState = PlayerStates.Crouching;
+        }
         else if (isGrounded)
         {
             CurrentState = PlayerStates.Grounded;
@@ -250,28 +305,36 @@ public class PlayerController : MonoBehaviour
     }
     private void CheckOnGround()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position,Vector3.down, out hit, playerSize, notPlayer))
+        if (Physics.Raycast(transform.position,Vector3.down, out slopeHit, playerSize, notPlayer))
         {
-            isGrounded = true;
-            climb.ResetWallClimb();
-            if (CurrentState != PlayerStates.Grounded)
+            if (!isGrounded)
             {
-                Vector3 velocity = rb.velocity;
+                climb.ResetWallClimb();
+                /*Vector3 velocity = rb.velocity;
                 velocity.y = 0;
-                rb.velocity = velocity;
-                rb.drag = dragAmount;
+                rb.velocity = velocity;*/
+                if (CurrentState != PlayerStates.Sliding)
+                    rb.drag = dragAmount;
                 timesJumped = 0;
                 hasDoubleJumped = false;
             }
+            isGrounded = true;
+            Vector3 forward = transform.forward;
+            forward.y = 0;
+            slopeAngle = 90 - Vector3.Angle(forward.normalized * -1f, slopeHit.normal);
+            isSlope = Mathf.Abs(slopeAngle) > 1 ? true : false;
         }
         else
         {
             isGrounded = false;
             
-            if (CurrentState != PlayerStates.InAir)
+            if (CurrentState == PlayerStates.InAir)
             {
                 rb.drag = 0;
+            }
+            if (isCrouching && !isSlope)
+            {
+                CancelCrouch();
             }
         }
     }
@@ -285,11 +348,11 @@ public class PlayerController : MonoBehaviour
             float dot = Vector3.Dot(proj, Vector3.down);
             if (dot >= 0 && proj.magnitude <= terminalVelocity)
             {
-                rb.velocity += (Vector3.down * gravity * 0.02f);
+                rb.velocity += (Vector3.down * gravity * Time.fixedDeltaTime);
             }
             else if (dot < 0)
             {
-                rb.velocity += (Vector3.down * gravity * 0.02f);
+                rb.velocity += (Vector3.down * gravity * Time.fixedDeltaTime);
             }
 
         }
@@ -302,16 +365,58 @@ public class PlayerController : MonoBehaviour
         velocityVertical.text = ("Vertical Velocity " + rb.velocity.y.ToString("F2"));
         velocityHorizontal.text = ("Horizontal Velocity " + new Vector2(rb.velocity.x, rb.velocity.z).magnitude.ToString("F2"));
     }
-
-    private void ResetSpeed()
+    
+    private void SetCrouching()
     {
-        speed.x = forwardSpeed;
-        speed.y = normalSpeed;
+        if (CurrentState == PlayerStates.Sliding)
+            return; 
+        
+        if (isCrouch && HoriVelocity().magnitude < crouchTriggerSpeed && isGrounded && !isCrouching)
+        {
+            //shrink the hitbox
+            //move the cam down
+            //slow the movement speed
+            col.height = col.height  - crouchHeight;
+            col.center = new Vector3(0, (crouchHeight * 0.5f) * -1f, 0);
+            camTr.localPosition = crouchPos;
+            if (rb.velocity.magnitude > crouchSpeed)
+            rb.velocity = rb.velocity.normalized * crouchSpeed;
+            speed = new Vector2(crouchSpeed, crouchSpeed);
+            isCrouching = true;
+        }
+    }
+    public void CrouchPressed(InputAction.CallbackContext context)
+    {
+        isCrouch = true;
+        /*if (HoriVelocity().magnitude < crouchSpeed && isGrounded)
+        {
+            //shrink the hitbox
+            //move the cam down
+            //slow the movement speed
+            speed = new Vector2(crouchSpeed, crouchSpeed);
+            isCrouching = true;
+        }*/
     }
 
-    public void SetState(PlayerStates stateToSet)
+    public void CrouchCancelled(InputAction.CallbackContext context)
     {
-        CurrentState = stateToSet;
+        isCrouch = false;
+        CancelCrouch();
+    }
+
+    private void CancelCrouch()
+    {
+        if (isCrouching)
+        {
+            //animate going up
+            //set hitboxes going up
+            //set cam back to default pos
+            col.height = col.height + crouchHeight;
+            col.center = new Vector3(0, 0, 0);
+            camTr.localPosition = unCrouchPos;
+        }
+        isCrouching = false;
+        speed = new Vector2(forwardSpeed, normalSpeed);
     }
 
     public void ToggleGravity(bool toggle)
@@ -329,5 +434,15 @@ public class PlayerController : MonoBehaviour
     public float MaxSpeed()
     {
         return forwardSpeed;
+    }
+
+    public bool GetGrounded()
+    {
+        return isGrounded;
+    }
+    
+    public RaycastHit GetSlopeHit()
+    {
+        return slopeHit;
     }
 }

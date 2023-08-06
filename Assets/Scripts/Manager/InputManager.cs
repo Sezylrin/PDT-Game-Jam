@@ -14,6 +14,8 @@ public class InputManager : MonoBehaviour
     private Climbing climbing;
     [SerializeField]
     private WallRunning wallRun;
+    [SerializeField]
+    private Sliding slide;
     private void Awake()
     {
         inputs = new PlayerInput();
@@ -31,6 +33,11 @@ public class InputManager : MonoBehaviour
         inputs.Player.Jump.performed += climbing.WallJump;
         inputs.Player.WASD.performed += wallRun.CheckInputs;
         inputs.Player.Jump.performed += wallRun.JumpPressed;
+        inputs.Player.Crouch.performed += player.CrouchPressed;
+        inputs.Player.Crouch.canceled += player.CrouchCancelled;
+        inputs.Player.Crouch.performed += slide.SetCrouch;
+        inputs.Player.Crouch.canceled += slide.CancelCrouch;
+        inputs.Player.WASD.performed += slide.SetDir;
     }
 
     private void OnDisable()
@@ -45,6 +52,11 @@ public class InputManager : MonoBehaviour
         inputs.Player.Jump.performed -= climbing.WallJump;
         inputs.Player.WASD.performed -= wallRun.CheckInputs;
         inputs.Player.Jump.performed -= wallRun.JumpPressed;
+        inputs.Player.Crouch.performed -= player.CrouchPressed;
+        inputs.Player.Crouch.canceled -= player.CrouchCancelled;
+        inputs.Player.Crouch.performed -= slide.SetCrouch;
+        inputs.Player.Crouch.canceled -= slide.CancelCrouch;
+        inputs.Player.WASD.performed -= slide.SetDir;
         inputs.Player.Disable();
     }
     void Start()
