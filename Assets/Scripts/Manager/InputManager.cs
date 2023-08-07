@@ -16,6 +16,8 @@ public class InputManager : MonoBehaviour
     private WallRunning wallRun;
     [SerializeField]
     private Sliding slide;
+    [SerializeField]
+    private Swinging swing;
     private void Awake()
     {
         inputs = new PlayerInput();
@@ -38,6 +40,7 @@ public class InputManager : MonoBehaviour
         inputs.Player.Crouch.performed += slide.SetCrouch;
         inputs.Player.Crouch.canceled += slide.CancelCrouch;
         inputs.Player.WASD.performed += slide.SetDir;
+        inputs.Player.Grapple.performed += swing.AttemptGrapple;
     }
 
     private void OnDisable()
@@ -57,6 +60,7 @@ public class InputManager : MonoBehaviour
         inputs.Player.Crouch.performed -= slide.SetCrouch;
         inputs.Player.Crouch.canceled -= slide.CancelCrouch;
         inputs.Player.WASD.performed -= slide.SetDir;
+        inputs.Player.Grapple.performed -= swing.AttemptGrapple;
         inputs.Player.Disable();
     }
     void Start()

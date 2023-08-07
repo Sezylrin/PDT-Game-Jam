@@ -12,11 +12,12 @@ public enum PlayerStates
     Sliding,
     Climbing,
     WallRunning,
+    Swinging,
     InAir
 }
 public class PlayerController : MonoBehaviour
 {
-    [Header("Player Stats")]
+    [Header("General Settings")]
     [SerializeField]
     private float acceleration;
     [SerializeField]
@@ -25,6 +26,15 @@ public class PlayerController : MonoBehaviour
     private float normalSpeed;
     [SerializeField]
     private float playerSize;
+
+    [Header("Aerial Settings")]
+    [SerializeField][Range(0,5)]
+    private float airAccelFactor;
+    [SerializeField]
+    [Range(0, 5)]
+    private float swingAccelFactor;
+
+    [field:Header("Physics")]
     [field:SerializeField]
     public float gravity { get; private set; }
     [SerializeField]
@@ -96,6 +106,8 @@ public class PlayerController : MonoBehaviour
     private WallRunning wallRun;
     [SerializeField]
     private Sliding slide;
+    [SerializeField]
+    private Swinging swing;
 
     [Header("Debug Values")]
     [SerializeField] [ReadOnly]
@@ -200,16 +212,21 @@ public class PlayerController : MonoBehaviour
 
     private void AerialMove()
     {
-        if (isGrounded || CurrentState != PlayerStates.InAir)
+        if (isGrounded || !(CurrentState == PlayerStates.InAir || CurrentState == PlayerStates.Swinging))
             return;
-        Vector2 accel = inputDirection * acceleration * Time.fixedDeltaTime;
+        float accelFactor;
+        if (CurrentState == PlayerStates.InAir)
+            accelFactor = acceleration * airAccelFactor;
+        else
+            accelFactor = acceleration * swingAccelFactor;
+        Vector2 accel = inputDirection * accelFactor * Time.fixedDeltaTime;
         Vector3 horizontal = rb.velocity;
         horizontal.y = 0;
         Vector3 vert = rb.velocity;
         vert.x = 0;
         vert.z = 0;
         Vector3 relative = transform.forward * accel.x + transform.right * accel.y;
-        if ((horizontal + relative).magnitude > forwardSpeed)
+        if ((horizontal + relative).magnitude > forwardSpeed && CurrentState == PlayerStates.InAir)
         {
             if ((horizontal + relative).magnitude > horizontal.magnitude)
                 rb.velocity = (horizontal + relative).normalized * horizontal.magnitude + vert;
@@ -278,7 +295,11 @@ public class PlayerController : MonoBehaviour
 
     private void StateChecker()
     {
-        if (climb.GetClimbing())
+        if (swing.GetSwinging())
+        {
+            CurrentState = PlayerStates.Swinging;
+        }
+        else if (climb.GetClimbing())
         {
             CurrentState = PlayerStates.Climbing;
         }
