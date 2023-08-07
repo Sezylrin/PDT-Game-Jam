@@ -17,6 +17,10 @@ public class InputManager : MonoBehaviour
     private WallRunning wallRun;
     [SerializeField]
     private PlayerAttack attack;
+    [SerializeField]
+    private Sliding slide;
+    [SerializeField]
+    private Swinging swing;
     private void Awake()
     {
         inputs = new PlayerInput();
@@ -40,6 +44,12 @@ public class InputManager : MonoBehaviour
         punch.Gameplay.Attack.started += attack.OnAttack; 
         punch.Gameplay.Attack.canceled += attack.ReleaseAttack;
         punch.Gameplay.Attack.performed += attack.FullCharge;
+        inputs.Player.Crouch.performed += player.CrouchPressed;
+        inputs.Player.Crouch.canceled += player.CrouchCancelled;
+        inputs.Player.Crouch.performed += slide.SetCrouch;
+        inputs.Player.Crouch.canceled += slide.CancelCrouch;
+        inputs.Player.WASD.performed += slide.SetDir;
+        inputs.Player.Grapple.performed += swing.AttemptGrapple;
     }
 
     private void OnDisable()
@@ -54,6 +64,12 @@ public class InputManager : MonoBehaviour
         inputs.Player.Jump.performed -= climbing.WallJump;
         inputs.Player.WASD.performed -= wallRun.CheckInputs;
         inputs.Player.Jump.performed -= wallRun.JumpPressed;
+        inputs.Player.Crouch.performed -= player.CrouchPressed;
+        inputs.Player.Crouch.canceled -= player.CrouchCancelled;
+        inputs.Player.Crouch.performed -= slide.SetCrouch;
+        inputs.Player.Crouch.canceled -= slide.CancelCrouch;
+        inputs.Player.WASD.performed -= slide.SetDir;
+        inputs.Player.Grapple.performed -= swing.AttemptGrapple;
         inputs.Player.Disable();
 
         punch.Gameplay.Attack.started -= attack.OnAttack;

@@ -62,9 +62,11 @@ public class Climbing : MonoBehaviour
     }
     public void CheckClimbing()
     {
-        if(isW && isSpace && canClimb)
+        if (isW)
+            Physics.Raycast(transform.position, transform.forward, out hit, scanDistance, terrain);
+        if (isW && isSpace && canClimb)
         {
-            if (Physics.Raycast(transform.position,transform.forward, out hit, scanDistance, terrain) && currentClimb < climbDuration)
+            if (hit.collider != null && currentClimb < climbDuration)
             {
                 Vector3 normDir = hit.normal;
                 normDir.y = 0;
@@ -122,7 +124,10 @@ public class Climbing : MonoBehaviour
     {
         canClimb = true;
     }
-
+    public bool IsStartClimb()
+    {
+        return (isW && hit.collider != null);
+    }
     public bool GetClimbing()
     {
         return isClimbing;
