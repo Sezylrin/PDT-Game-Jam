@@ -212,7 +212,7 @@ public class PlayerController : MonoBehaviour
 
     private void AerialMove()
     {
-        if (isGrounded || !(CurrentState == PlayerStates.InAir || CurrentState == PlayerStates.Swinging))
+        if ((isGrounded && CurrentState != PlayerStates.Swinging) || !(CurrentState == PlayerStates.InAir || CurrentState == PlayerStates.Swinging))
             return;
         float accelFactor;
         if (CurrentState == PlayerStates.InAir)
@@ -334,7 +334,7 @@ public class PlayerController : MonoBehaviour
                 /*Vector3 velocity = rb.velocity;
                 velocity.y = 0;
                 rb.velocity = velocity;*/
-                if (CurrentState != PlayerStates.Sliding)
+                if (CurrentState != PlayerStates.Sliding && CurrentState != PlayerStates.Swinging)
                     rb.drag = dragAmount;
                 timesJumped = 0;
                 hasDoubleJumped = false;

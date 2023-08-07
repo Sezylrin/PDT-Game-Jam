@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 2099310213667590100}
   - component: {fileID: 6734924320892312056}
   - component: {fileID: 720125219735038601}
+  - component: {fileID: 7872606648839806521}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -59,6 +60,7 @@ MonoBehaviour:
   Camera: {fileID: 4416468706949159960}
   climbing: {fileID: 8536466896391369383}
   wallRun: {fileID: 8389415690687987179}
+  attack: {fileID: 7872606648839806521}
   slide: {fileID: 2099310213667590100}
   swing: {fileID: 6734924320892312056}
 --- !u!136 &7647790139207116909
@@ -373,6 +375,34 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &7872606648839806521
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3655620390688732764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe28347890626204ea4bc7f9969741ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  playerCamera: {fileID: 1229637164567357250}
+  attackCooldown: 0.5
+  attackDelay: 0
+  distanceThreshold: 3
+  hitboxOffset: {x: 0, y: 0, z: 0}
+  standardDamage: 10
+  standardRadius: 3
+  standardKnockback: 150
+  chargeTime: 1
+  chargedDamage: 40
+  chargedRadius: 5
+  chargedKnockback: 250
+  enableDebugSphere: 1
+  hitboxSphere: {fileID: 4586088745463712437, guid: 3a248c7b186386b40b4d6196fc07a36f, type: 3}
+  debugLifetime: 0
 --- !u!1 &4572790355958082254
 GameObject:
   m_ObjectHideFlags: 0
