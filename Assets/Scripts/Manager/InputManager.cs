@@ -75,7 +75,7 @@ public class InputManager : MonoBehaviour
         punch.Gameplay.Attack.started -= attack.OnAttack;
         punch.Gameplay.Attack.canceled -= attack.ReleaseAttack;
         punch.Gameplay.Attack.performed -= attack.FullCharge;
-        punch.Enable();
+        punch.Disable();
     }
     void Start()
     {
